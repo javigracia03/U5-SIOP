@@ -10,6 +10,7 @@ void PrintBytemaps(EXT_BYTE_MAPS *ext_bytemaps);
 void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos);
 void Info(EXT_SIMPLE_SUPERBLOCK *superblock);
 int Renombrar(EXT_ENTRADA_DIR *directorio, char *nombre_antiguo, char *nombre_nuevo);
+int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *memdatos, char *nombre);
 
 int main() {
     char comando[LONGITUD_COMANDO];
@@ -61,6 +62,12 @@ int main() {
             } else {
                 printf("Error al renombrar archivo.\n");
             }
+        } else if (strcmp(orden, "imprimir") == 0) {
+            if (Imprimir(directorio, &ext_blq_inodos, memdatos, argumento1) == 0) {
+                printf("Archivo impreso correctamente.\n");
+            } else {
+                printf("Error al imprimir archivo.\n");
+            }
         } else if (strcmp(orden, "salir") == 0) {
             fclose(fent);
             break;
@@ -109,6 +116,28 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, char *nombre_antiguo, char *nombre_nu
     for (int i = 0; i < MAX_FICHEROS; i++) {
         if (strcmp(directorio[i].dir_nfich, nombre_antiguo) == 0) {
             strcpy(directorio[i].dir_nfich, nombre_nuevo);
+            return 0; // Éxito
+        }
+    }
+    return -1; // Error: archivo no encontrado
+}
+
+// Función para imprimir archivo
+int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *memdatos, char *nombre) {
+    for (int i = 0; i < MAX_FICHEROS; i++) {
+        if (strcmp(directorio[i].dir_nfich, nombre) == 0) {
+            int inodo_idx = directorio[i].dir_inodo;
+            if (inodo_idx == NULL_INODO) {
+                return -1; // Error: inodo no válido
+            }
+
+            EXT_SIMPLE_INODE inodo = inodos->blq_inodos[inodo_idx];
+            for (int j = 0; j < MAX_NUMS_BLOQUE_INODO; j++) {
+                if (inodo.i_nbloque[j] != NULL_BLOQUE) {
+                    fwrite(memdatos[inodo.i_nbloque[j]].dato, SIZE_BLOQUE, 1, stdout);
+                }
+            }
+            printf("\n");
             return 0; // Éxito
         }
     }
