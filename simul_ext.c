@@ -107,13 +107,15 @@ void Info(EXT_SIMPLE_SUPERBLOCK *superblock) {
 
 // Función para mostrar los bytemaps
 void PrintBytemaps(EXT_BYTE_MAPS *ext_bytemaps) {
-    printf("Bytemap de bloques:\n");
-    for (int i = 0; i < MAX_BLOQUES_PARTICION; i++) {
-        printf("%d", ext_bytemaps->bmap_bloques[i]);
-    }
-    printf("\nBytemap de inodos:\n");
+    printf("Inodos :");
     for (int i = 0; i < MAX_INODOS; i++) {
-        printf("%d", ext_bytemaps->bmap_inodos[i]);
+        printf(" %d", ext_bytemaps->bmap_inodos[i]);
+    }
+    printf("\n");
+
+    printf("Bloques [0-24] :");
+    for (int i = 0; i < 25; i++) {
+        printf(" %d", ext_bytemaps->bmap_bloques[i]);
     }
     printf("\n");
 }
