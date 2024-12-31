@@ -40,11 +40,11 @@ Renombra un archivo en el sistema de archivos.
 
 Muestra el contenido de un archivo especificado por su nombre.
 
-### 6. `copiar <archivo_origen> <archivo_destino>`
+### 6. `copy <archivo_origen> <archivo_destino>`
 
 Copia un archivo existente a un nuevo archivo dentro del sistema de archivos, asignando nuevos bloques y un nuevo inodo para el archivo destino.
 
-### 7. `borrar <archivo>`
+### 7. `remove <archivo>`
 
 Elimina un archivo del sistema de archivos. Esto incluye:
 
@@ -136,10 +136,10 @@ file2.txt       64         2          4
 >> imprimir file1.txt
 Contenido del archivo file1.txt...
 
->> copiar file1.txt file3.txt
+>> copy file1.txt file3.txt
 Archivo copiado correctamente.
 
->> borrar file2.txt
+>> remove file2.txt
 Archivo borrado correctamente.
 
 >> salir
