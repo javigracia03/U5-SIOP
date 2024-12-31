@@ -135,7 +135,7 @@ void Directorio(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos) {
             printf("\n");
         }
     }
-    printf("");
+    printf("\n");
 };
 
 // Función para renombrar archivo
@@ -149,54 +149,56 @@ int Renombrar(EXT_ENTRADA_DIR *directorio, char *nombre_antiguo, char *nombre_nu
     return -1; // Error: archivo no encontrado
 }
 
-// Función para imprimir archivo
+// Función para imprimir el contenido de un archivo
 int Imprimir(EXT_ENTRADA_DIR *directorio, EXT_BLQ_INODOS *inodos, EXT_DATOS *memdatos, char *nombre) {
+    int inodo_archivo = -1;
+
+    // Buscar el archivo en el directorio
     for (int i = 0; i < MAX_FICHEROS; i++) {
         if (strcmp(directorio[i].dir_nfich, nombre) == 0) {
-            int inodo_idx = directorio[i].dir_inodo;
-            if (inodo_idx == NULL_INODO) {
-                printf("Inodo no válido para el archivo %s.\n", nombre);
-                return -1; // Error: inodo no válido
-            }
-
-            EXT_SIMPLE_INODE inodo = inodos->blq_inodos[inodo_idx];
-
-            // Verificar si el archivo está vacío
-            if (inodo.size_fichero == 0) {
-                printf("El archivo %s está vacío.\n", nombre);
-                return -1;
-            }
-
-            int bytes_leidos = 0;
-            int tamano_restante = inodo.size_fichero;
-
-            for (int j = 0; j < MAX_NUMS_BLOQUE_INODO; j++) {
-                if (inodo.i_nbloque[j] != NULL_BLOQUE) {
-                    int tamano_a_leer = (tamano_restante > SIZE_BLOQUE) ? SIZE_BLOQUE : tamano_restante;
-
-                    printf("Leyendo bloque %d:\n", inodo.i_nbloque[j]);
-                    fwrite(memdatos[inodo.i_nbloque[j]].dato, 1, tamano_a_leer, stdout);
-
-                    bytes_leidos += tamano_a_leer;
-                    tamano_restante -= tamano_a_leer;
-
-                    if (tamano_restante <= 0) {
-                        break;
-                    }
-                }
-            }
-
-            if (bytes_leidos != inodo.size_fichero) {
-                printf("Advertencia: No se leyó el tamaño esperado del archivo %s.\n", nombre);
-            }
-
-            printf("\n");
-            return 0; // Éxito
+            inodo_archivo = directorio[i].dir_inodo;
+            break;
         }
     }
-    printf("Archivo %s no encontrado en el directorio.\n", nombre);
-    return -1; // Error: archivo no encontrado
+
+    if (inodo_archivo == -1) {
+        printf("Archivo no encontrado.\n");
+        return -1;
+    }
+
+    // Obtener el inodo correspondiente
+    EXT_SIMPLE_INODE *inode = &inodos->blq_inodos[inodo_archivo];
+
+    // Concatenar los bloques de datos
+    char contenido[MAX_BLOQUES_DATOS * SIZE_BLOQUE + 1];
+    memset(contenido, '\0', sizeof(contenido));
+
+    int offset = 0; // Variable para manejar el offset dentro del buffer
+    for (int i = 0; i < MAX_NUMS_BLOQUE_INODO; i++) {
+        if (inode->i_nbloque[i] != NULL_BLOQUE && inode->i_nbloque[i] < MAX_BLOQUES_DATOS) {
+            // Imprimir el bloque que se está procesando
+            printf("Procesando bloque: %d\n", inode->i_nbloque[i]);
+
+            // Copiar bloque de datos al buffer
+            memcpy(contenido + offset, memdatos[inode->i_nbloque[i]].dato, SIZE_BLOQUE);
+            offset += SIZE_BLOQUE; // Incrementar el offset por el tamaño del bloque
+
+            // Verificar si se ha copiado todo el tamaño del archivo
+            if (offset >= inode->size_fichero) {
+                break;
+            }
+        }
+    }
+
+    // Asegurarse de que el contenido termina con '\0'
+    contenido[inode->size_fichero] = '\0';
+
+    // Imprimir el contenido del archivo
+    printf("Contenido del archivo %s:\n%s\n", nombre, contenido);
+
+    return 0;
 }
+
 
 // Verifica que los bloques asignados a inodos sean únicos
 void VerificarBloquesUnicos(EXT_BYTE_MAPS *ext_bytemaps, EXT_BLQ_INODOS *inodos, EXT_ENTRADA_DIR *directorio) {

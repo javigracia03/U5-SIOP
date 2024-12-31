@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/javiergracia/Desktop/U5-SIOP/simul_ext'
+relocations:     []
+...
